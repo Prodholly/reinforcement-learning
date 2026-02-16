@@ -1,517 +1,343 @@
 # reinforcement-learning
-a reinforcement learning final project
-🚗 DeepSpeed
-Geometry-Aware Reinforcement Learning for High-Performance Autonomous Racing
+A reinforcement learning final project
 
-Course Project — Reinforcement Learning for Robotics
-Arizona State University — School of Electrical, Computer, and Energy Engineering
+# DeepSpeed
+## Geometry-Aware Reinforcement Learning for High-Performance Autonomous Racing
 
-👥 Team
+**Course Project — Reinforcement Learning for Robotics**  
+Arizona State University — School of Electrical, Computer, and Energy Engineering  
 
-DeepSpeed
+---
 
-Kaiyuan Tan
+## Team
 
-Perfect Obumneme
+- Kaiyuan Tan  
+- Perfect Obumneme  
+- Emmanuel Adeloju  
+- Sung Park  
+- Atharva Hundare  
 
-Emmanuel Adeloju
-
-Sung Park
-
-Atharva Hundare
-
-📧 Contacts:
+Contacts:  
 [ktan24, pobumnem, eadeloju, spark259, ahundare]@asu.edu
 
-📌 Abstract
+---
 
-We present DeepSpeed, a geometry-driven reinforcement learning framework for autonomous racing built on the AWS DeepRacer platform.
+## Abstract
 
-Unlike conventional reward engineering approaches that directly incentivize speed, progress, or on-track heuristics, our method formulates driving as a pure steering alignment problem derived from geometric first principles.
+We present **DeepSpeed**, a geometry-driven reinforcement learning framework for autonomous racing built on the AWS DeepRacer platform.
 
-We show that:
+Unlike conventional reward engineering approaches that directly incentivize speed, progress, or on-track heuristics, our method formulates driving as a **pure steering alignment problem derived from geometric first principles**.
 
-Proper steering alignment with future track curvature implicitly produces speed, stability, and faster lap times.
+We show that proper steering alignment with future track curvature implicitly produces speed, stability, and faster lap times.
 
-DeepSpeed:
+### DeepSpeed:
 
-❌ does not reward speed
-❌ does not reward progress
-❌ does not reward wheels-on-track
-✅ rewards only optimal steering decisions
+- Does not reward speed  
+- Does not reward progress  
+- Does not reward wheels-on-track  
+- Rewards only optimal steering decisions  
 
 This minimalistic reward design produces:
 
-Smoother trajectories
+- Smoother trajectories  
+- Earlier corner entry  
+- Natural apex cutting  
+- Improved stability across unseen tracks  
 
-Earlier corner entry
+---
 
-Natural apex cutting
+# Table of Contents
 
-Improved stability across unseen tracks
+1. Problem Formulation  
+2. Environment  
+3. Geometric Foundations  
+4. Track Processing  
+5. Lookahead Target Selection  
+6. Optimal Steering Derivation  
+7. Reward Function Design  
+8. RL Configuration  
+9. Training  
+10. Evaluation Results  
+11. Key Insight  
+12. Future Work  
+13. Credits  
 
-📚 Table of Contents
+---
 
-Problem Formulation
-
-Environment
-
-Geometric Foundations
-
-Track Processing
-
-Lookahead Target Selection
-
-Optimal Steering Derivation
-
-Reward Function Design
-
-RL Configuration
-
-Training
-
-Evaluation Results
-
-Key Insight
-
-Future Work
-
-Credits
-
-1️⃣ Problem Formulation
+# 1. Problem Formulation
 
 We cast autonomous racing as a Markov Decision Process (MDP):
 
-𝑀
-=
-(
-𝑆
-,
-𝐴
-,
-𝑃
-,
-𝑅
-,
-𝛾
-)
-M=(S,A,P,R,γ)
+```
+M = (S, A, P, R, gamma)
+```
 
 Where:
 
-$s_t$ = vehicle pose + track observations
-
-$a_t$ = steering, throttle
-
-$R(s_t, a_t)$ = reward
-
-$\gamma$ = discount factor
+- s_t = vehicle pose + track observations  
+- a_t = steering, throttle  
+- R(s_t, a_t) = reward  
+- gamma = discount factor  
 
 Goal:
 
-𝜋
-∗
-=
-arg
-⁡
-max
-⁡
-𝜋
-𝐸
-[
-∑
-𝑡
-=
-0
-𝑇
-𝛾
-𝑡
-𝑅
-(
-𝑠
-𝑡
-,
-𝑎
-𝑡
-)
-]
-π
-∗
-=arg
-π
-max
-	​
-
-E[
-t=0
-∑
-T
-	​
-
-γ
-t
-R(s
-t
-	​
-
-,a
-t
-	​
-
-)]
+```
+pi* = argmax_pi  E[ sum_{t=0}^{T} gamma^t R(s_t, a_t) ]
+```
 
 Instead of maximizing velocity or progress directly, we optimize future heading alignment.
 
-2️⃣ Environment
+---
 
-Platform: AWS DeepRacer simulator
+# 2. Environment
 
-Camera-based perception
+**Platform:** AWS DeepRacer simulator  
 
-Continuous control
+- Camera-based perception  
+- Continuous control  
+- Multiple racetracks  
+- Time-trial evaluation  
 
-Multiple racetracks
+**Performance Metric:**  
+Lap Time (seconds) ↓
 
-Time-trial evaluation
+---
 
-Performance Metric:
-
-Lap Time (seconds)
-↓
-Lap Time (seconds)↓
-3️⃣ Geometric Foundations
+# 3. Geometric Foundations
 
 At each timestep the vehicle solves a local geometric control problem.
 
-State Representation
+## State Representation
 
 Car pose:
 
-𝑝
-=
-(
-𝑥
-,
-𝑦
-)
-∈
-𝑅
-2
-,
-𝜃
-∈
-[
-−
-𝜋
-,
-𝜋
-]
-p=(x,y)∈R
-2
-,θ∈[−π,π]
+```
+p = (x, y) in R^2
+theta in [-pi, pi]
+```
 
 Track waypoints:
 
-𝑊
-=
-{
-𝑤
-1
-,
-𝑤
-2
-,
-.
-.
-.
-,
-𝑤
-𝑁
-}
-W={w
-1
-	​
+```
+W = {w1, w2, ..., wN}
+```
 
-,w
-2
-	​
-
-,...,w
-N
-	​
-
-}
-Core Primitives
+### Core Primitives
 
 Our policy depends only on:
 
-Euclidean distance
+- Euclidean distance  
+- Polar direction  
+- Shortest rotation angle  
 
-Polar direction
+---
 
-Shortest rotation angle
+# 4. Track Processing
 
-4️⃣ Track Processing
-Problem
+## Problem
 
-Raw waypoints are sparse → straight-line approximations.
+Raw waypoints are sparse, leading to straight-line approximations.
 
 This causes:
 
-Jagged control
+- Jagged control  
+- Inaccurate curvature estimation  
 
-Inaccurate curvature estimation
-
-Solution — Upsampling
+## Solution — Upsampling
 
 We densify:
 
-𝑊
-→
-𝑊
-~
-W→
-W
-~
+```
+W -> W_tilde
+```
 
 using interpolation to approximate a continuous curve.
 
 Benefits:
 
-Smoother geometry
+- Smoother geometry  
+- Stable targets  
+- Reduced oscillations  
 
-Stable targets
+---
 
-Reduced oscillations
+# 5. Lookahead Target Selection
 
-5️⃣ Lookahead Target Selection
+We introduce a lookahead radius `r`.
 
-We introduce a lookahead radius $r$.
+### Algorithm
 
-Algorithm
+1. Find nearest waypoint  
+2. Move forward distance r  
+3. Select target w_t  
 
-Find nearest waypoint
+This predicts future curvature rather than immediate position.
 
-Move forward distance $r$
+---
 
-Select target $w_t$
-
-This predicts future curvature instead of immediate position.
-
-6️⃣ Optimal Steering Derivation
+# 6. Optimal Steering Derivation
 
 Let:
 
-𝑑
-⃗
-=
-𝑤
-𝑡
-−
-𝑝
-d
-=w
-t
-	​
-
-−p
+```
+d = w_t - p
+```
 
 Target direction:
 
-𝜙
-=
-atan2
-(
-𝑑
-𝑦
-,
-𝑑
-𝑥
-)
-ϕ=atan2(d
-y
-	​
-
-,d
-x
-	​
-
-)
+```
+phi = atan2(d_y, d_x)
+```
 
 Heading error:
 
-Δ
-𝜃
-=
-𝜙
-−
-𝜃
-Δθ=ϕ−θ
+```
+delta_theta = phi - theta
+```
 
 Optimal steering:
 
-𝛿
-∗
-=
-clip
-(
-Δ
-𝜃
-)
-δ
-∗
-=clip(Δθ)
+```
+delta* = clip(delta_theta)
+```
 
 Steering becomes pure angle minimization.
 
-7️⃣ Reward Function Design
-Core Philosophy
+---
+
+# 7. Reward Function Design
+
+## Core Philosophy
 
 We reward only steering correctness.
 
-Final Reward
-𝑅
-=
-exp
-⁡
-(
-−
-𝑘
-∣
-Δ
-𝜃
-∣
-)
-R=exp(−k∣Δθ∣)
+### Final Reward
+
+```
+R = exp(-k * abs(delta_theta))
+```
 
 Where:
 
-Small error → large reward
+- Small error → large reward  
+- Large misalignment → exponential penalty  
 
-Large misalignment → exponential penalty
+### Not Incentivized
 
-Not incentivized
+- Speed  
+- Progress  
+- On-track checks  
 
-Speed
-
-Progress
-
-On-track checks
-
-Why This Works
+### Why This Works
 
 Correct alignment naturally yields:
 
-Earlier corner entry
+- Earlier corner entry  
+- Apex cutting  
+- Straight exits  
+- Higher stable speeds  
 
-Apex cutting
+**Good steering ⇒ Good speed**
 
-Straight exits
+---
 
-Higher stable speeds
+# 8. RL Configuration
 
-Good steering ⇒ Good speed
+| Category | Value |
+|----------|--------|
+| Algorithm | PPO |
+| Framework | TensorFlow |
+| Action Space | Continuous |
+| Speed | 0.5–3.7 m/s |
+| Steering | -27° to 28° |
+| Batch Size | 64 |
+| Entropy | 0.01 |
+| Discount | 0.99 |
+| Learning Rate | 3e-4 |
+| Epochs | 10 |
 
-8️⃣ RL Configuration
-Category	Value
-Algorithm	PPO
-Framework	TensorFlow
-Action Space	Continuous
-Speed	0.5–3.7 m/s
-Steering	−27° to 28°
-Batch Size	64
-Entropy	0.01
-Discount	0.99
-Learning Rate	3e-4
-Epochs	10
-9️⃣ Training
+---
 
-Training Track: Circuit de Barcelona-Catalunya
-Training Time: ~190 minutes
+# 9. Training
+
+**Training Track:** Circuit de Barcelona-Catalunya  
+**Training Time:** ~190 minutes  
 
 Procedure:
 
-Design reward
+1. Design reward  
+2. Train PPO  
+3. Evaluate on unseen tracks  
+4. Iterate  
 
-Train PPO
+---
 
-Evaluate on unseen tracks
-
-Iterate
-
-🔟 Evaluation Results
+# 10. Evaluation Results
 
 Generalization tested on multiple unseen tracks.
 
-Lap Time Gap vs World Record
-Case	Performance
-Best	~7% slower
-Worst	~32% slower
-Observations
+## Lap Time Gap vs World Record
 
-Stable across tracks
+| Case | Performance |
+|------|-------------|
+| Best | ~7% slower |
+| Worst | ~32% slower |
 
-Fewer spin-outs
+### Observations
 
-Smooth trajectories
+- Stable across tracks  
+- Fewer spin-outs  
+- Smooth trajectories  
+- Strong cornering behavior  
 
-Strong cornering behavior
+---
 
-1️⃣1️⃣ Key Insight
+# 11. Key Insight
 
 Most teams trade:
 
-speed ↔ off-track penalties
+speed ↔ off-track penalties  
 
 DeepSpeed achieves both by optimizing geometry instead of heuristics.
 
-1️⃣2️⃣ Future Work
-Corner Stability
-∣
-𝛿
-𝑡
-−
-𝛿
-𝑡
-−
-1
-∣
-∣δ
-t
-	​
+---
 
-−δ
-t−1
-	​
+# 12. Future Work
 
-∣
-Speed Awareness
-𝑣
-⋅
-cos
-⁡
-(
-Δ
-𝜃
-)
-v⋅cos(Δθ)
-Additional Ideas
+## Corner Stability
 
-Throttle regularization
+```
+abs(delta_t - delta_{t-1})
+```
 
-Fast completion bonus
+## Speed Awareness
 
-1️⃣3️⃣ Credits & Contributions
-Member	Contribution
-Kaiyuan Tan	Model creation + training
-Perfect Obumneme	Reward iteration, equations, plots
-Emmanuel Adeloju	Multi-track evaluation experiments
-Sung Park	Reward tuning + hyperparameters
-Atharva Hundare	Final reward design + evaluation
-📖 Citation
+```
+v * cos(delta_theta)
+```
+
+Additional ideas:
+
+- Throttle regularization  
+- Fast completion bonus  
+
+---
+
+# 13. Credits & Contributions
+
+| Member | Contribution |
+|--------|--------------|
+| Kaiyuan Tan | Model creation + training |
+| Perfect Obumneme | Reward iteration, equations, plots |
+| Emmanuel Adeloju | Multi-track evaluation experiments |
+| Sung Park | Reward tuning + hyperparameters |
+| Atharva Hundare | Final reward design + evaluation |
+
+---
+
+## Citation
 
 If referencing this work:
 
-DeepSpeed: Geometry-Aware Reinforcement Learning for Autonomous Racing,
+DeepSpeed: Geometry-Aware Reinforcement Learning for Autonomous Racing,  
 ASU EEE RL Project, 2025.
-
