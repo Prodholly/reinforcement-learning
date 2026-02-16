@@ -1,6 +1,3 @@
-# reinforcement-learning
-A reinforcement learning final project
-
 # DeepSpeed
 ## Geometry-Aware Reinforcement Learning for High-Performance Autonomous Racing
 
