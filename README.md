@@ -29,10 +29,10 @@ We show that proper steering alignment with future track curvature implicitly pr
 
 ### DeepSpeed:
 
-- Does not reward speed  
-- Does not reward progress  
-- Does not reward wheels-on-track  
-- Rewards only optimal steering decisions  
+- oes not reward speed  
+- does not reward progress  
+- does not reward wheels-on-track  
+- It rewards only optimal steering decisions  
 
 This minimalistic reward design produces:
 
