@@ -1,13 +1,12 @@
 # reinforcement-learning
 a reinforcement learning final project
-
 🚗 DeepSpeed
 Geometry-Aware Reinforcement Learning for High-Performance Autonomous Racing
 
 Course Project — Reinforcement Learning for Robotics
 Arizona State University — School of Electrical, Computer, and Energy Engineering
 
-Team
+👥 Team
 
 DeepSpeed
 
@@ -21,40 +20,37 @@ Sung Park
 
 Atharva Hundare
 
-Contacts: [ktan24, pobumnem, eadeloju, spark259, ahundare]@asu.edu
+📧 Contacts:
+[ktan24, pobumnem, eadeloju, spark259, ahundare]@asu.edu
 
-Abstract
+📌 Abstract
 
-We present DeepSpeed, a geometry-driven reinforcement learning framework for autonomous racing built on the Amazon Web Services AWS DeepRacer platform.
+We present DeepSpeed, a geometry-driven reinforcement learning framework for autonomous racing built on the AWS DeepRacer platform.
 
 Unlike conventional reward engineering approaches that directly incentivize speed, progress, or on-track heuristics, our method formulates driving as a pure steering alignment problem derived from geometric first principles.
 
 We show that:
 
-Proper steering alignment with the future curvature of the track implicitly produces
-speed, stability, and faster lap times.
+Proper steering alignment with future track curvature implicitly produces speed, stability, and faster lap times.
 
-Thus, DeepSpeed:
+DeepSpeed:
 
 ❌ does not reward speed
-
 ❌ does not reward progress
-
 ❌ does not reward wheels-on-track
-
 ✅ rewards only optimal steering decisions
 
-This minimalistic reward design leads to:
+This minimalistic reward design produces:
 
-smoother trajectories
+Smoother trajectories
 
-earlier corner entry
+Earlier corner entry
 
-natural apex cutting
+Natural apex cutting
 
-improved stability across unseen tracks
+Improved stability across unseen tracks
 
-Table of Contents
+📚 Table of Contents
 
 Problem Formulation
 
@@ -72,19 +68,17 @@ Reward Function Design
 
 RL Configuration
 
-Training Procedure
+Training
 
 Evaluation Results
 
-Ablation & Insights
+Key Insight
 
 Future Work
 
-Repository Structure
-
 Credits
 
-1. Problem Formulation
+1️⃣ Problem Formulation
 
 We cast autonomous racing as a Markov Decision Process (MDP):
 
@@ -103,13 +97,13 @@ We cast autonomous racing as a Markov Decision Process (MDP):
 )
 M=(S,A,P,R,γ)
 
-where
+Where:
 
 $s_t$ = vehicle pose + track observations
 
 $a_t$ = steering, throttle
 
-$R(s_t,a_t)$ = reward
+$R(s_t, a_t)$ = reward
 
 $\gamma$ = discount factor
 
@@ -166,26 +160,26 @@ t
 
 )]
 
-Instead of directly maximizing velocity or progress, we optimize future heading alignment.
+Instead of maximizing velocity or progress directly, we optimize future heading alignment.
 
-2. Environment
+2️⃣ Environment
 
 Platform: AWS DeepRacer simulator
 
-camera-based perception
+Camera-based perception
 
-continuous control
+Continuous control
 
-multiple racetracks
+Multiple racetracks
 
-time-trial evaluation
+Time-trial evaluation
 
-Performance metric:
+Performance Metric:
 
 Lap Time (seconds)
 ↓
 Lap Time (seconds)↓
-3. Geometric Foundations
+3️⃣ Geometric Foundations
 
 At each timestep the vehicle solves a local geometric control problem.
 
@@ -216,7 +210,7 @@ p=(x,y)∈R
 2
 ,θ∈[−π,π]
 
-Track:
+Track waypoints:
 
 𝑊
 =
@@ -227,7 +221,9 @@ Track:
 𝑤
 2
 ,
-…
+.
+.
+.
 ,
 𝑤
 𝑁
@@ -240,7 +236,7 @@ W={w
 2
 	​
 
-,…,w
+,...,w
 N
 	​
 
@@ -255,16 +251,16 @@ Polar direction
 
 Shortest rotation angle
 
-4. Track Processing
+4️⃣ Track Processing
 Problem
 
 Raw waypoints are sparse → straight-line approximations.
 
 This causes:
 
-jagged control
+Jagged control
 
-inaccurate curvature estimation
+Inaccurate curvature estimation
 
 Solution — Upsampling
 
@@ -282,13 +278,13 @@ using interpolation to approximate a continuous curve.
 
 Benefits:
 
-smoother geometry
+Smoother geometry
 
-stable targets
+Stable targets
 
-reduced oscillations
+Reduced oscillations
 
-5. Lookahead Target Selection
+5️⃣ Lookahead Target Selection
 
 We introduce a lookahead radius $r$.
 
@@ -300,11 +296,11 @@ Move forward distance $r$
 
 Select target $w_t$
 
-This predicts future track curvature rather than immediate position.
+This predicts future curvature instead of immediate position.
 
-6. Optimal Steering Derivation
+6️⃣ Optimal Steering Derivation
 
-Let
+Let:
 
 𝑑
 ⃗
@@ -366,11 +362,9 @@ clip
 ∗
 =clip(Δθ)
 
-Thus:
-
 Steering becomes pure angle minimization.
 
-7. Reward Function Design
+7️⃣ Reward Function Design
 Core Philosophy
 
 We reward only steering correctness.
@@ -390,98 +384,89 @@ exp
 )
 R=exp(−k∣Δθ∣)
 
-where:
+Where:
 
-small error → large reward
+Small error → large reward
 
-large misalignment → exponential penalty
+Large misalignment → exponential penalty
 
 Not incentivized
 
-speed
+Speed
 
-progress
+Progress
 
-on-track checks
+On-track checks
 
-Why this works
+Why This Works
 
-Correct alignment automatically yields:
+Correct alignment naturally yields:
 
-earlier corner entry
+Earlier corner entry
 
-apex cutting
+Apex cutting
 
-straight exits
+Straight exits
 
-higher stable speeds
+Higher stable speeds
 
-Hence:
+Good steering ⇒ Good speed
 
-Good steering
-⇒
-Good speed
-Good steering⇒Good speed
-8. RL Configuration
+8️⃣ RL Configuration
 Category	Value
 Algorithm	PPO
 Framework	TensorFlow
-Action space	Continuous
+Action Space	Continuous
 Speed	0.5–3.7 m/s
 Steering	−27° to 28°
-Batch size	64
+Batch Size	64
 Entropy	0.01
 Discount	0.99
-Learning rate	3e-4
+Learning Rate	3e-4
 Epochs	10
-9. Training
+9️⃣ Training
 
-Training track: Circuit de Barcelona-Catalunya
-Training time: ~190 minutes
+Training Track: Circuit de Barcelona-Catalunya
+Training Time: ~190 minutes
 
 Procedure:
 
-design reward
+Design reward
 
-train PPO
+Train PPO
 
-evaluate on unseen tracks
+Evaluate on unseen tracks
 
-iterate
+Iterate
 
-10. Evaluation Results
+🔟 Evaluation Results
 
 Generalization tested on multiple unseen tracks.
 
-Lap time gap vs world record
+Lap Time Gap vs World Record
 Case	Performance
 Best	~7% slower
 Worst	~32% slower
 Observations
 
-stable across tracks
+Stable across tracks
 
-fewer spin-outs
+Fewer spin-outs
 
-smooth trajectories
+Smooth trajectories
 
-strong cornering behavior
+Strong cornering behavior
 
-11. Key Insight
+1️⃣1️⃣ Key Insight
 
 Most teams trade:
 
 speed ↔ off-track penalties
 
-DeepSpeed achieves both by:
+DeepSpeed achieves both by optimizing geometry instead of heuristics.
 
-optimizing geometry instead of heuristics.
-
-12. Future Work
+1️⃣2️⃣ Future Work
 Corner Stability
-
-Penalize large steering derivatives:
-
 ∣
 𝛿
 𝑡
@@ -501,9 +486,6 @@ t−1
 
 ∣
 Speed Awareness
-
-Reward speed only when aligned:
-
 𝑣
 ⋅
 cos
@@ -513,24 +495,23 @@ cos
 𝜃
 )
 v⋅cos(Δθ)
-Smooth Acceleration
+Additional Ideas
 
 Throttle regularization
 
-Lap Bonus
+Fast completion bonus
 
-Fast completion reward
-
-14. Credits & Contributions
+1️⃣3️⃣ Credits & Contributions
 Member	Contribution
 Kaiyuan Tan	Model creation + training
 Perfect Obumneme	Reward iteration, equations, plots
 Emmanuel Adeloju	Multi-track evaluation experiments
 Sung Park	Reward tuning + hyperparameters
 Atharva Hundare	Final reward design + evaluation
-Citation
+📖 Citation
 
-If you reference this work:
+If referencing this work:
 
-DeepSpeed: Geometry-Aware Reinforcement Learning for Autonomous Racing, ASU EEE RL Project, 2025.
+DeepSpeed: Geometry-Aware Reinforcement Learning for Autonomous Racing,
+ASU EEE RL Project, 2025.
 
